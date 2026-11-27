@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Setup Database JOKIPLACE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .box { background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
+    h1 { color: #1a1f36; margin-bottom: 10px; }
+    p { color: #6b7280; margin-bottom: 24px; font-size: 14px; }
+    button { background: #2563eb; color: #fff; border: none; padding: 14px 24px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
+    button:hover { background: #1d4ed8; }
+    .success { color: #16a34a; font-weight: bold; margin-top: 20px; display: none; }
+</style>
+</head>
+<body>
+<div class="box">
+    <h1>Setup Database</h1>
+    <p>Klik tombol di bawah ini untuk mengisi data Admin dan Penjoki ke dalam sistem.</p>
+    <button onclick="setup()">Buat Database Sekarang</button>
+    <div id="msg" class="success">✅ Database berhasil dibuat! Silakan <a href="login.html">Login</a>.</div>
+</div>
+
+<script>
+function setup() {
+    // 1. Buat database Akun (jp_users)
+    const users = [
+      {
+        id: "USR-ADMIN",
+        nama: "Admin",
+        email: "nafronabdi@gmail.com",
+        password: "h_19o5n4p", // hash dari "admin123"
+        role: "admin",
+        penjokiNama: "",
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: "USR-TAZZ",
+        nama: "Tazz",
+        email: "tazz@gmail.com",
+        password: "h_19o5n4p", // hash dari "admin123"
+        role: "penjoki",
+        penjokiNama: "Tazz",
+        createdAt: new Date().toISOString()
+      }
+    ];
+
+    // 2. Buat database Profil Penjoki (jp_penjoki)
+    const penjoki = [
+      {
+        id: 1, nama: "Tazz", asal: "Jakarta", status: "online",
+        rating: 4.8, totalUlasan: 120, winRate: 78, kdRatio: 3.2, totalMatch: 1450,
+        tierBR: "Heroic V", tierCS: "Heroic 42", hargaMulai: 25000, estimasi: "2-3 hari",
+        keahlian: ["BR Rank", "CS Rank", "Win Rate"],
+        deskripsi: "Spesialis push rank cepat dan aman.",
+        ulasan: []
+      }
+    ];
+
+    // 3. Simpan ke LocalStorage
+    localStorage.setItem("jp_users", JSON.stringify(users));
+    localStorage.setItem("jp_penjoki", JSON.stringify(penjoki));
+    localStorage.setItem("jp_pendaftar", JSON.stringify([]));
+    localStorage.setItem("jp_orders", JSON.stringify([]));
+
+    document.getElementById("msg").style.display = "block";
+    document.querySelector("button").style.display = "none";
+}
+</script>
+</body>
+</html>

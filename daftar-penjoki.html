@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JOKIPLACE - Daftar Penjoki</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+<div class="layout">
+<header class="header">
+<a class="logo" href="index.html">JOKIPLACE</a>
+<div style="margin-left:auto;display:flex;gap:12px">
+<a href="index.html" class="btn btn-outline">Beranda</a>
+<a href="login.html" class="btn btn-outline">Login</a>
+</div>
+</header>
+<div class="content">
+<div style="max-width:520px;margin:40px auto;background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px;box-shadow:0 8px 30px rgba(15,108,255,.08)">
+<h1 style="font-size:24px;font-weight:900;margin-bottom:8px;text-align:center">Daftar Jadi Penjoki</h1>
+<p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px">Isi data diri kamu. Admin akan review pendaftaran.</p>
+
+<form id="daftarForm" onsubmit="submitDaftar(event)">
+<div class="calc-group" style="margin-bottom:16px"><label>Nama Lengkap</label><input type="text" id="dNama" required placeholder="Nama kamu"></div>
+<div class="calc-group" style="margin-bottom:16px"><label>Email Gmail</label><input type="email" id="dEmail" required placeholder="nama@gmail.com" pattern=".+@gmail\.com"><p style="font-size:11px;color:var(--muted);margin-top:4px">Harus @gmail.com</p></div>
+<div class="calc-group" style="margin-bottom:16px"><label>Password Akun</label><input type="password" id="dPassword" required placeholder="Minimal 6 karakter" minlength="6"><p style="font-size:11px;color:var(--muted);margin-top:4px">Gunakan ini untuk login nanti jika disetujui</p></div>
+<div class="calc-group" style="margin-bottom:16px"><label>Nomor WhatsApp</label><input type="tel" id="dWa" required placeholder="08xxxxxxxxxx"></div>
+<div class="calc-group" style="margin-bottom:16px"><label>Asal Kota</label><input type="text" id="dAsal" required placeholder="Contoh: Jakarta"></div>
+<div class="calc-row" style="margin-bottom:16px">
+<div class="calc-group"><label>Rank BR Tertinggi</label><input type="text" id="dRankBR" required placeholder="Contoh: Heroic V"></div>
+<div class="calc-group"><label>Rank CS Tertinggi</label><input type="text" id="dRankCS" required placeholder="Contoh: Heroic 49"></div>
+</div>
+<div class="calc-row" style="margin-bottom:16px">
+<div class="calc-group"><label>Win Rate (%)</label><input type="number" id="dWinRate" min="0" max="100" required placeholder="75"></div>
+<div class="calc-group"><label>K/D Ratio</label><input type="number" id="dKd" step="0.1" min="0" required placeholder="3.5"></div>
+</div>
+<div class="calc-group" style="margin-bottom:16px"><label>Total Match</label><input type="number" id="dMatch" min="0" required placeholder="1000"></div>
+<div class="calc-group" style="margin-bottom:16px"><label>Keahlian (pisah koma)</label><input type="text" id="dKeahlian" required placeholder="BR Rank, CS Rank, Win Rate"></div>
+<div class="calc-group" style="margin-bottom:24px"><label>Deskripsi Singkat</label><input type="text" id="dDesc" required placeholder="Ceritakan pengalamanmu"></div>
+<button type="submit" class="btn btn-primary" style="width:100%;padding:14px">Kirim Pendaftaran</button>
+</form>
+
+<div style="text-align:center;margin-top:16px">
+<a href="index.html" style="font-size:13px;color:var(--muted)">&larr; Kembali</a>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+const KEY_PENDAFTAR = "jp_pendaftar";
+const KEY_USERS = "jp_users";
+const ADMIN_EMAIL = "nafronabdi@gmail.com";
+
+function hashPassword(pw) {
+  let hash = 0;
+  for (let i = 0; i < pw.length; i++) {
+    const char = pw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return "h_" + Math.abs(hash).toString(36);
+}
+
+function getPendaftar() { try { return JSON.parse(localStorage.getItem(KEY_PENDAFTAR) || "[]"); } catch(e){ return []; } }
+function savePendaftar(l) { localStorage.setItem(KEY_PENDAFTAR, JSON.stringify(l)); }
+function getUsers() { try { return JSON.parse(localStorage.getItem(KEY_USERS) || "[]"); } catch(e){ return []; } }
+function saveUsers(l) { localStorage.setItem(KEY_USERS, JSON.stringify(l)); }
+
+function submitDaftar(e) {
+  e.preventDefault();
+  const email = document.getElementById("dEmail").value.trim().toLowerCase();
+  
+  if (email === ADMIN_EMAIL) { alert("Email ini tidak bisa didaftarkan."); return; }
+  if (!email.endsWith("@gmail.com")) { alert("Email harus @gmail.com"); return; }
+
+  const password = document.getElementById("dPassword").value;
+  if (password.length < 6) { alert("Password minimal 6 karakter"); return; }
+
+  // Cek apakah email sudah dipakai di akun (login) atau pendaftar sebelumnya
+  const users = getUsers();
+  if (users.find(u => u.email.toLowerCase() === email)) { alert("Email sudah terdaftar sebagai user. Gunakan email lain."); return; }
+
+  const data = {
+    id: "REG-" + Date.now(),
+    nama: document.getElementById("dNama").value.trim(),
+    email: email,
+    password: hashPassword(password), // Langsung di-hash agar aman
+    wa: document.getElementById("dWa").value.trim(),
+    asal: document.getElementById("dAsal").value.trim(),
+    rankBR: document.getElementById("dRankBR").value.trim(),
+    rankCS: document.getElementById("dRankCS").value.trim(),
+    winRate: parseInt(document.getElementById("dWinRate").value) || 0,
+    kdRatio: parseFloat(document.getElementById("dKd").value) || 0,
+    totalMatch: parseInt(document.getElementById("dMatch").value) || 0,
+    keahlian: document.getElementById("dKeahlian").value.split(",").map(s => s.trim()).filter(Boolean),
+    deskripsi: document.getElementById("dDesc").value.trim(),
+    status: "Menunggu Review",
+    tanggal: new Date().toLocaleString("id-ID")
+  };
+
+  const list = getPendaftar();
+  list.unshift(data);
+  savePendaftar(list);
+
+  alert("Pendaftaran berhasil dikirim. Tunggu review admin.");
+  window.location.href = "login.html";
+}
+</script>
+</body>
+</html>

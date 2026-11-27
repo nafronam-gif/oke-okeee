@@ -1,0 +1,469 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JOKIPLACE - Dashboard Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<style>
+.dash-layout{display:flex;min-height:100vh;background:#f7f8fc;font-family:'Inter',sans-serif}
+.dash-sidebar{width:260px;background:#fff;border-right:1px solid #e5e7eb;padding:24px 16px;flex-shrink:0;position:fixed;height:100vh;overflow-y:auto;z-index:100}
+.dash-logo{padding:0 16px;margin-bottom:32px;font-size:22px;font-weight:900;color:var(--blue);text-decoration:none;display:block;letter-spacing:-1px}
+.dash-nav{display:flex;flex-direction:column;gap:4px}
+.dash-nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;font-size:14px;font-weight:600;color:#6b7280;text-decoration:none;cursor:pointer;transition:all .2s;border:none;background:none;width:100%;text-align:left}
+.dash-nav-item:hover{background:#f0f5ff;color:var(--blue)}
+.dash-nav-item.active{background:var(--blue-soft);color:var(--blue);font-weight:700}
+.dash-nav-item svg{width:20px;height:20px;fill:currentColor}
+.dash-main{flex:1;margin-left:260px;display:flex;flex-direction:column;min-height:100vh}
+.dash-header{height:72px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:90}
+.dash-header h1{font-size:20px;font-weight:800;color:#1a1f36;margin:0}
+.dash-user{display:flex;align-items:center;gap:16px;font-size:14px;font-weight:600;color:#1a1f36}
+.dash-user-avatar{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.dash-content{padding:32px;max-width:1200px;margin:0 auto;width:100%}
+.dash-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.dash-metric{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:20px 24px;box-shadow:0 4px 10px rgba(0,0,0,.02);display:flex;flex-direction:column;gap:8px}
+.dash-metric-title{font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px}
+.dash-metric-value{font-size:32px;font-weight:900;color:#1a1f36}
+.dash-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.02)}
+.dash-tabs{display:flex;border-bottom:1px solid #e5e7eb;background:#fff}
+.dash-tab{padding:16px 24px;font-size:14px;font-weight:600;color:#6b7280;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px}
+.dash-tab:hover{color:#1a1f36}
+.dash-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.dash-tab-count{background:#f3f4f6;color:#6b7280;font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px}
+.dash-tab.active .dash-tab-count{background:var(--blue-soft);color:var(--blue)}
+.dash-panel{padding:24px}
+.list-item{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 0;border-bottom:1px solid #f3f4f6;gap:16px}
+.list-item:first-child{padding-top:0}
+.list-item:last-child{border-bottom:none;padding-bottom:0}
+.item-info{flex:1;min-width:0}
+.item-title{font-size:15px;font-weight:700;color:#1a1f36;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.item-desc{font-size:13px;color:#6b7280;margin-bottom:8px;line-height:1.5}
+.item-meta{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#6b7280;font-weight:500}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.process{background:#dbeafe;color:#1e40af}
+.badge.done{background:#d1fae5;color:#065f46}
+.badge.admin{background:#fee2e2;color:#991b1b}
+.badge.penjoki{background:#fef3c7;color:#92400e}
+.badge.client{background:#f3f4f6;color:#4b5563}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}
+.btn-clean{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{background:var(--blue-dark);border-color:var(--blue-dark)}
+.btn-secondary{background:#f3f4f6;color:#1a1f36;border-color:#e5e7eb}
+.btn-secondary:hover{background:#e5e7eb}
+.btn-danger{background:#fef2f2;color:#dc2626;border-color:#fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-clean:disabled{opacity:.5;cursor:not-allowed}
+.input-clean{padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;outline:none;flex:1;min-width:160px;font-family:inherit;transition:all .2s}
+.input-clean:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(15,108,255,.1)}
+.select-clean{padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;outline:none;background:#fff;flex:1;min-width:160px;font-family:inherit}
+.select-clean:focus{border-color:var(--blue)}
+.empty-state{text-align:center;padding:60px 20px;color:#6b7280;font-size:14px}
+.avatar-small{width:40px;height:40px;border-radius:50%;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0}
+@media(max-width:900px){
+  .dash-sidebar{transform:translateX(-100%);transition:transform .3s}
+  .dash-sidebar.show{transform:translateX(0)}
+  .dash-main{margin-left:0}
+  .dash-metrics{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .dash-metrics{grid-template-columns:1fr}
+  .list-item{flex-direction:column}
+  .actions{width:100%;flex-direction:column;align-items:stretch}
+  .btn-clean, .input-clean, .select-clean{width:100%}
+  .dash-tabs{overflow-x:auto;white-space:nowrap}
+}
+/* ===== MODERN ALERT / CONFIRM MODAL ===== */
+.modal-confirm-overlay {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; z-index: 9999;
+    opacity: 0; visibility: hidden; transition: all 0.2s ease;
+}
+.modal-confirm-overlay.show { opacity: 1; visibility: visible; }
+.modal-confirm-box {
+    background: #fff; border-radius: 16px; width: 90%; max-width: 400px; padding: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    transform: scale(0.95); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-confirm-overlay.show .modal-confirm-box { transform: scale(1); }
+.modal-confirm-title { font-size: 18px; font-weight: 800; color: #1a1f36; margin-bottom: 8px; }
+.modal-confirm-desc { font-size: 14px; color: #6b7280; margin-bottom: 24px; line-height: 1.5; }
+.modal-confirm-actions { display: flex; gap: 12px; justify-content: flex-end; }
+.modal-confirm-actions button {
+    padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s;
+}
+.btn-confirm-cancel { background: #f3f4f6; color: #4b5563; }
+.btn-confirm-cancel:hover { background: #e5e7eb; }
+.btn-confirm-ok { background: #ef4444; color: #fff; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
+.btn-confirm-ok:hover { background: #dc2626; }
+</style>
+</head>
+<body>
+<div class="dash-layout">
+  
+  <aside class="dash-sidebar" id="sidebar">
+    <a href="index.html" class="dash-logo">JOKIPLACE</a>
+    <div class="dash-nav">
+      <button class="dash-nav-item active" onclick="showTab('orders')" id="nav-orders">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        Transaksi
+      </button>
+      <button class="dash-nav-item" onclick="showTab('penjoki')" id="nav-penjoki">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+        Penjoki
+      </button>
+      <button class="dash-nav-item" onclick="showTab('users')" id="nav-users">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        User
+      </button>
+      <button class="dash-nav-item" onclick="showTab('pendaftar')" id="nav-pendaftar">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        Pendaftar
+      </button>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-header">
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="dash-user">
+        <span id="userInfo">-</span>
+        <div class="dash-user-avatar" id="userAvatar">A</div>
+        <button class="btn-clean btn-secondary" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="dash-metrics" id="dashMetrics">
+        <div class="dash-metric">
+          <span class="dash-metric-title">Total Transaksi</span>
+          <span class="dash-metric-value" id="metric-orders">0</span>
+        </div>
+        <div class="dash-metric">
+          <span class="dash-metric-title">Total Penjoki</span>
+          <span class="dash-metric-value" id="metric-penjoki">0</span>
+        </div>
+        <div class="dash-metric">
+          <span class="dash-metric-title">Total User</span>
+          <span class="dash-metric-value" id="metric-users">0</span>
+        </div>
+        <div class="dash-metric">
+          <span class="dash-metric-title">Total Pendaftar</span>
+          <span class="dash-metric-value" id="metric-pendaftar">0</span>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-tabs">
+          <button class="dash-tab active" onclick="showTab('orders')" id="tab-orders">Transaksi <span class="dash-tab-count" id="count-orders">0</span></button>
+          <button class="dash-tab" onclick="showTab('penjoki')" id="tab-penjoki">Penjoki <span class="dash-tab-count" id="count-penjoki">0</span></button>
+          <button class="dash-tab" onclick="showTab('users')" id="tab-users">User <span class="dash-tab-count" id="count-users">0</span></button>
+          <button class="dash-tab" onclick="showTab('pendaftar')" id="tab-pendaftar">Pendaftar <span class="dash-tab-count" id="count-pendaftar">0</span></button>
+        </div>
+
+        <div class="dash-panel" id="panel-orders">
+          <div id="ordersList"></div>
+        </div>
+        <div class="dash-panel" id="panel-penjoki" style="display:none">
+          <div id="penjokiList"></div>
+        </div>
+        <div class="dash-panel" id="panel-users" style="display:none">
+          <div id="usersList"></div>
+        </div>
+        <div class="dash-panel" id="panel-pendaftar" style="display:none">
+          <div id="pendaftarList"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const KEY_USER = "jp_user";
+const KEY_PENJOKI = "jp_penjoki";
+const KEY_ORDERS = "jp_orders";
+const KEY_USERS = "jp_users";
+const KEY_PENDAFTAR = "jp_pendaftar";
+const ADMIN_EMAIL = "nafronabdi@gmail.com";
+function hashPassword(pw) {
+  let hash = 0;
+  for (let i = 0; i < pw.length; i++) {
+    const char = pw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return "h_" + Math.abs(hash).toString(36);
+}
+
+function getUser() { try { return JSON.parse(localStorage.getItem(KEY_USER) || "null"); } catch(e){ return null; } }
+function getPenjoki() { try { return JSON.parse(localStorage.getItem(KEY_PENJOKI) || "[]"); } catch(e){ return []; } }
+function savePenjoki(l) { localStorage.setItem(KEY_PENJOKI, JSON.stringify(l)); }
+function getOrders() { try { return JSON.parse(localStorage.getItem(KEY_ORDERS) || "[]"); } catch(e){ return []; } }
+function saveOrders(l) { localStorage.setItem(KEY_ORDERS, JSON.stringify(l)); }
+function getUsers() { try { return JSON.parse(localStorage.getItem(KEY_USERS) || "[]"); } catch(e){ return []; } }
+function getPendaftar() { try { return JSON.parse(localStorage.getItem(KEY_PENDAFTAR) || "[]"); } catch(e){ return []; } }
+function savePendaftar(l) { localStorage.setItem(KEY_PENDAFTAR, JSON.stringify(l)); }
+function safe(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+function cekRole() {
+  const u = getUser();
+  if (!u) { window.location.href = "login.html"; return null; }
+  if (u.role !== "admin") { window.location.href = "login.html"; return null; }
+  document.getElementById("userInfo").textContent = u.nama;
+  const av = document.getElementById("userAvatar");
+  if (av) av.textContent = u.nama.charAt(0).toUpperCase();
+  return u;
+}
+
+function logout() {
+  localStorage.removeItem(KEY_USER);
+  window.location.href = "login.html";
+}
+
+function updateCounts() {
+  const o = getOrders().length;
+  const p = getPenjoki().length;
+  const u = getUsers().length;
+  const d = getPendaftar().length;
+  
+  document.getElementById("count-orders").textContent = o;
+  document.getElementById("count-penjoki").textContent = p;
+  document.getElementById("count-users").textContent = u;
+  document.getElementById("count-pendaftar").textContent = d;
+  
+  document.getElementById("metric-orders").textContent = o;
+  document.getElementById("metric-penjoki").textContent = p;
+  document.getElementById("metric-users").textContent = u;
+  document.getElementById("metric-pendaftar").textContent = d;
+}
+
+function showTab(tab) {
+  ["orders","penjoki","users","pendaftar"].forEach(t => {
+    document.getElementById("panel-" + t).style.display = t === tab ? "block" : "none";
+    document.getElementById("tab-" + t).classList.toggle("active", t === tab);
+    document.getElementById("nav-" + t).classList.toggle("active", t === tab);
+  });
+  const titles = { orders: "Transaksi", penjoki: "Penjoki", users: "User", pendaftar: "Pendaftar" };
+  document.getElementById("pageTitle").textContent = titles[tab] || "Dashboard";
+  
+  if (tab === "orders") renderOrders();
+  else if (tab === "penjoki") renderPenjokiAdmin();
+  else if (tab === "users") renderUsers();
+  else if (tab === "pendaftar") renderPendaftar();
+  updateCounts();
+}
+
+function renderOrders() {
+  const list = getOrders();
+  const el = document.getElementById("ordersList");
+  if (!list.length) { el.innerHTML = '<div class="empty-state">Belum ada transaksi.</div>'; updateCounts(); return; }
+  const penjokiList = getPenjoki();
+  el.innerHTML = list.map(o => `
+    <div class="list-item">
+      <div class="item-info">
+        <div class="item-title">${safe(o.id)} <span class="badge ${o.status === "Selesai" ? "done" : o.status === "Diproses" ? "process" : "pending"}">${safe(o.status || "Menunggu")}</span></div>
+        <div class="item-desc">${safe(o.layanan || "-")} | ${safe(o.rankAwal || "-")} &rarr; ${safe(o.rankTujuan || "-")}</div>
+        <div class="item-meta">
+          <span><strong>Penjoki:</strong> ${safe(o.penjokiNama || "-")}</span>
+          <span><strong>Pemesan:</strong> ${safe(o.nama || "-")} (${safe(o.wa || "-")})</span>
+          <span><strong>Estimasi:</strong> ${o.estimasiSelesai ? safe(o.estimasiSelesai) : '<span style="color:#dc2626">Belum diisi</span>'}</span>
+          <span><strong>Tanggal:</strong> ${safe(o.tanggal || "-")}</span>
+        </div>
+        <div class="actions">
+          <select class="select-clean" onchange="assignPenjoki('${o.id}', this.value)">
+            <option value="">-- Tugaskan --</option>
+            ${penjokiList.map(p => `<option value="${safe(p.nama)}" ${o.assignedTo === p.nama ? "selected" : ""}>${safe(p.nama)}</option>`).join("")}
+          </select>
+          <input type="text" class="input-clean" placeholder="Estimasi" value="${safe(o.estimasiSelesai || "")}" onchange="setEstimasi('${o.id}', this.value)">
+          <button class="btn-clean btn-secondary" onclick="setStatus('${o.id}','Diproses')">Proses</button>
+          <button class="btn-clean btn-primary" onclick="selesaikan('${o.id}')" ${o.estimasiSelesai ? '' : 'disabled'}>Selesai</button>
+          <button class="btn-clean btn-danger" onclick="hapusOrder('${o.id}')">Hapus</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+  updateCounts();
+}
+
+function assignPenjoki(id, nama) { const l = getOrders(); const o = l.find(x => x.id === id); if (!o) return; o.assignedTo = nama; if (nama) o.status = "Ditugaskan"; saveOrders(l); renderOrders(); }
+function setEstimasi(id, val) { const l = getOrders(); const o = l.find(x => x.id === id); if (!o) return; o.estimasiSelesai = val.trim(); saveOrders(l); renderOrders(); }
+function setStatus(id, status) { const l = getOrders(); const o = l.find(x => x.id === id); if (!o) return; o.status = status; saveOrders(l); renderOrders(); }
+function selesaikan(id) { const l = getOrders(); const o = l.find(x => x.id === id); if (!o) return; if (!o.estimasiSelesai) { alert("Isi estimasi!"); return; } o.status = "Selesai"; o.selesaiPada = new Date().toLocaleString("id-ID"); saveOrders(l); renderOrders(); }
+function hapusOrder(id) { showConfirm("Hapus Transaksi?", "Data transaksi akan dihapus permanen.", () => { saveOrders(getOrders().filter(x => x.id !== id)); renderOrders(); }); }
+
+function renderPenjokiAdmin() {
+  const list = getPenjoki();
+  const el = document.getElementById("penjokiList");
+  if (!list.length) { el.innerHTML = '<div class="empty-state">Belum ada penjoki.</div>'; updateCounts(); return; }
+  el.innerHTML = list.map(p => `
+    <div class="list-item">
+      <div style="display:flex;gap:16px;align-items:flex-start;width:100%">
+        <div class="avatar-small">${safe(p.nama.charAt(0))}</div>
+        <div class="item-info">
+          <div class="item-title">${safe(p.nama)} <span class="badge ${p.status === "online" ? "done" : "pending"}">${safe(p.status || "-")}</span></div>
+          <div class="item-desc">${safe(p.asal || "-")} • ${safe(p.tierBR || "-")} — ${safe(p.deskripsi || "")}</div>
+          <div class="item-meta">
+            <span>Rating: ${p.rating || 0}</span>
+            <span>Ulasan: ${p.totalUlasan || 0}</span>
+            <span>WR: ${p.winRate || 0}%</span>
+            <span>K/D: ${p.kdRatio || 0}</span>
+          </div>
+          <div class="actions">
+            <button class="btn-clean btn-danger" onclick="hapusPenjoki(${p.id})">Hapus Penjoki</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+  updateCounts();
+}
+let pendingAction = null;
+
+function showConfirm(title, desc, actionCallback) {
+    document.querySelector(".modal-confirm-title").textContent = title;
+    document.getElementById("confirmModalDesc").textContent = desc;
+    document.getElementById("confirmModal").classList.add("show");
+    pendingAction = actionCallback;
+    document.getElementById("btnConfirmOk").onclick = () => {
+        if (pendingAction) pendingAction();
+        tutupConfirm();
+    };
+}
+
+function tutupConfirm() {
+    document.getElementById("confirmModal").classList.remove("show");
+    pendingAction = null;
+}
+
+function hapusPenjoki(id) { 
+    showConfirm("Hapus Penjoki?", "Tindakan ini tidak dapat dibatalkan. Profil dan akses login penjoki akan dihapus permanen.", () => {
+        // 1. Ambil data penjoki sebelum dihapus untuk tahu email/nama-nya
+        const penjokiData = getPenjoki().find(x => x.id === id);
+        
+        // 2. Hapus dari daftar profil (jp_penjoki)
+        savePenjoki(getPenjoki().filter(x => x.id !== id)); 
+        
+        // 3. Hapus dari daftar akun login (jp_users) berdasarkan nama
+        if (penjokiData && penjokiData.nama) {
+            const users = getUsers();
+            const filteredUsers = users.filter(u => u.penjokiNama !== penjokiData.nama && u.nama !== penjokiData.nama);
+            localStorage.setItem(KEY_USERS, JSON.stringify(filteredUsers));
+        }
+
+        renderPenjokiAdmin();
+        renderUsers(); // Refresh tabel user juga
+    });
+}
+
+function renderUsers() {
+  const list = getUsers();
+  const el = document.getElementById("usersList");
+  if (!list.length) { el.innerHTML = '<div class="empty-state">Belum ada user.</div>'; updateCounts(); return; }
+  el.innerHTML = list.map(u => {
+    // Paksa nafronabdi@gmail.com jadi ADMIN, apapun isi localStorage-nya
+    const role = (u.email && u.email.toLowerCase() === ADMIN_EMAIL) ? "admin" : (u.role || "client");
+    const badge = role === "admin" ? "admin" : role === "penjoki" ? "penjoki" : "client";
+    return `
+    <div class="list-item">
+      <div class="item-info">
+        <div class="item-title">${safe(u.nama)} <span class="badge ${badge}">${safe(role)}</span></div>
+        <div class="item-desc">${safe(u.email)}</div>
+        <div class="item-meta">Daftar: ${safe(u.createdAt || "-")}</div>
+      </div>
+    </div>
+  `}).join("");
+  updateCounts();
+}
+
+function renderPendaftar() {
+  const list = getPendaftar();
+  const el = document.getElementById("pendaftarList");
+  if (!list.length) { el.innerHTML = '<div class="empty-state">Belum ada pendaftar.</div>'; updateCounts(); return; }
+  el.innerHTML = list.map(p => `
+    <div class="list-item">
+      <div class="item-info">
+        <div class="item-title">${safe(p.nama)} <span class="badge ${p.status === "Disetujui" ? "done" : p.status === "Ditolak" ? "pending" : "process"}">${safe(p.status || "Menunggu Review")}</span></div>
+        <div class="item-desc">${safe(p.email || "-")} • ${safe(p.wa || "-")} • ${safe(p.asal || "-")}</div>
+        <div class="item-meta">
+          <span>Rank: ${safe(p.rankBR || "-")} / ${safe(p.rankCS || "-")}</span>
+          <span>WR: ${p.winRate || 0}% | K/D: ${p.kdRatio || 0}</span>
+          <span>Daftar: ${safe(p.tanggal || "-")}</span>
+        </div>
+        <div class="actions">
+          ${p.status === "Menunggu Review" ? `
+            <button class="btn-clean btn-primary" onclick="approvePendaftar('${p.id}')">Setujui</button>
+            <button class="btn-clean btn-secondary" onclick="rejectPendaftar('${p.id}')">Tolak</button>
+          ` : ""}
+          <button class="btn-clean btn-danger" onclick="hapusPendaftar('${p.id}')">Hapus</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+  updateCounts();
+}
+
+function approvePendaftar(id) {
+  const l = getPendaftar(); const p = l.find(x => x.id === id); if (!p) return;
+  p.status = "Disetujui"; savePendaftar(l);
+  
+  // 1. Masukkan ke daftar penjoki
+  const pl = getPenjoki();
+  pl.push({ 
+    id: Date.now(), nama: p.nama, asal: p.asal, status: "online", 
+    rating: 0, totalUlasan: 0, winRate: p.winRate, kdRatio: p.kdRatio, totalMatch: p.totalMatch, 
+    tierBR: p.rankBR, tierCS: p.rankCS, hargaMulai: 25000, estimasi: "2-3 hari", 
+    keahlian: p.keahlian, deskripsi: p.deskripsi, ulasan: [] 
+  });
+  savePenjoki(pl);
+
+  // 2. Bikin akun login (role: penjoki)
+  const users = getUsers();
+  const existing = users.find(u => u.email.toLowerCase() === p.email.toLowerCase());
+  if (!existing) {
+    users.push({
+      id: "USR-" + Date.now(), nama: p.nama, email: p.email.toLowerCase(),
+      password: hashPassword(p.password || "123456"), // Default 123456 jika password kosong
+      role: "penjoki", penjokiNama: p.nama, createdAt: new Date().toISOString()
+    });
+    saveUsers(users);
+  } else {
+    existing.role = "penjoki";
+    existing.penjokiNama = p.nama;
+    saveUsers(users);
+  }
+
+  alert("Pendaftar disetujui!\nAkun login otomatis dibuat dengan email: " + p.email);
+  renderPendaftar(); renderPenjokiAdmin();
+}
+function rejectPendaftar(id) { showConfirm("Tolak Pendaftar?", "Pendaftar ini akan ditolak dan tidak bisa masuk.", () => { const l = getPendaftar(); const p = l.find(x => x.id === id); if (!p) return; p.status = "Ditolak"; savePendaftar(l); renderPendaftar(); }); }
+function hapusPendaftar(id) { showConfirm("Hapus Pendaftar?", "Data pendaftar akan dihapus permanen.", () => { savePendaftar(getPendaftar().filter(x => x.id !== id)); renderPendaftar(); }); }
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!cekRole()) return;
+  updateCounts();
+  renderOrders();
+});
+</script>
+<div id="confirmModal" class="modal-confirm-overlay">
+    <div class="modal-confirm-box">
+        <div class="modal-confirm-title">Hapus Penjoki?</div>
+        <div class="modal-confirm-desc" id="confirmModalDesc">Tindakan ini tidak dapat dibatalkan. Data penjoki akan dihapus permanen dari sistem.</div>
+        <div class="modal-confirm-actions">
+            <button class="btn-confirm-cancel" onclick="tutupConfirm()">Batal</button>
+            <button class="btn-confirm-ok" id="btnConfirmOk">Ya, Hapus</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

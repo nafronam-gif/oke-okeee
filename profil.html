@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JOKIPLACE - Profil Penjoki</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<style>
+    .profil-container { max-width: 1000px; margin: 40px auto; position: relative; z-index: 10; }
+    
+    /* Header Card */
+    .profil-header-card { 
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); 
+        border: 1px solid rgba(255,255,255,0.5); border-radius: 24px; padding: 40px; 
+        display: flex; gap: 32px; align-items: center; flex-wrap: wrap; 
+        box-shadow: 0 20px 40px rgba(15,108,255,0.05); margin-bottom: 24px;
+    }
+    .profil-avatar { 
+        width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #5b9dff); 
+        color: #fff; display: flex; align-items: center; justify-content: center; 
+        font-weight: 900; font-size: 48px; box-shadow: 0 10px 25px rgba(15,108,255,0.3); flex-shrink: 0;
+    }
+    .profil-info { flex: 1; min-width: 250px; }
+    .profil-name { font-size: 32px; font-weight: 900; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+    .profil-meta { font-size: 15px; color: var(--muted); margin-bottom: 16px; font-weight: 500; }
+    .profil-rating-box { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .rating-score { background: #fffbeb; color: #d97706; padding: 6px 16px; border-radius: 20px; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 6px; border: 1px solid #fde68a; }
+    .rating-count { font-size: 14px; color: var(--muted); font-weight: 600; }
+    .profil-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* Grid Layout */
+    .profil-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
+    @media(max-width: 800px) { .profil-grid { grid-template-columns: 1fr; } }
+
+    /* Cards */
+    .glass-card { 
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); 
+        border: 1px solid rgba(255,255,255,0.5); border-radius: 20px; padding: 28px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 24px;
+    }
+    .card-title { font-size: 18px; font-weight: 900; color: var(--text); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+
+    /* Performa Grid */
+    .perf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; }
+    .perf-item { background: var(--bg); border: 1px solid var(--line); padding: 16px; border-radius: 12px; text-align: center; transition: 0.2s; }
+    .perf-item:hover { transform: translateY(-2px); border-color: var(--blue-soft); box-shadow: 0 4px 12px rgba(15,108,255,0.05); }
+    .perf-item span { display: block; font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .perf-item strong { display: block; font-size: 20px; color: var(--blue); font-weight: 900; }
+
+    /* Ulasan List */
+    .ulasan-list { display: flex; flex-direction: column; gap: 16px; max-height: 500px; overflow-y: auto; padding-right: 8px; }
+    .ulasan-list::-webkit-scrollbar { width: 6px; }
+    .ulasan-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .ulasan-item { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; border-left: 4px solid var(--blue); }
+    .ulasan-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .ulasan-name { font-size: 14px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .ulasan-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; }
+    .review-stars { color: #f59e0b; font-size: 14px; letter-spacing: 2px; }
+    .ulasan-text { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 8px; font-style: italic; }
+    .ulasan-date { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* Cara Pengerjaan */
+    .cara-list { list-style: none; padding: 0; margin: 0; }
+    .cara-list li { position: relative; padding-left: 32px; margin-bottom: 16px; font-size: 14px; color: var(--text); line-height: 1.5; }
+    .cara-list li::before { 
+        content: '✓'; position: absolute; left: 0; top: 2px; 
+        width: 20px; height: 20px; background: var(--blue-soft); color: var(--blue); 
+        border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900;
+    }
+
+    /* Status Dot */
+    .status-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; }
+    .status-dot.online { background: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,0.2); }
+    .status-dot.offline { background: #9ca3af; }
+</style>
+</head>
+<body>
+<div id="tsparticles" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none"></div>
+<div class="layout" style="position:relative;z-index:1">
+<header class="header">
+    <a class="logo" href="index.html">JOKIPLACE</a>
+    <div style="margin-left:auto;display:flex;gap:12px">
+        <a href="index.html" class="btn btn-outline">Beranda</a>
+        <a href="jokiutama.html" class="btn" style="background:#10b981; color:white; border:none; padding:10px 20px; font-weight:700; text-decoration:none;">JOKI ADMIN</a>
+    </div>
+</header>
+
+<div class="content">
+    <div id="profilContainer" class="profil-container">
+        <!-- Diisi oleh JavaScript -->
+    </div>
+</div>
+
+<footer style="background:#0a1430;color:#fff;padding:40px 32px;margin-top:60px;text-align:center;position:relative;z-index:2">
+    <div style="font-size:24px;font-weight:900;letter-spacing:-1.5px;margin-bottom:16px">JOKIPLACE</div>
+    <p style="font-size:13px;color:#9ca3af">&copy; 2026 JOKIPLACE. All rights reserved.</p>
+</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+<script>
+if (typeof tsParticles !== 'undefined') {
+  tsParticles.load("tsparticles", {
+    fpsLimit: 60,
+    particles: { color: { value: "#0f6cff" }, links: { color: "#0f6cff", distance: 150, enable: true, opacity: 0.2, width: 1 }, move: { enable: true, speed: 1 }, number: { value: 60 }, size: { value: { min: 1, max: 4 } } }
+  });
+}
+
+const KEY_PENJOKI = "jp_penjoki";
+const KEY_ULASAN = "jp_ulasan";
+
+function safe(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function money(n) { return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(n); }
+
+function renderProfil() {
+  const params = new URLSearchParams(window.location.search);
+  const id = parseInt(params.get("id") || "0");
+  
+  // 1. Ambil data profil penjoki
+  let list = [];
+  try {
+      const raw = localStorage.getItem(KEY_PENJOKI);
+      list = raw ? JSON.parse(raw) : [];
+  } catch(e) { list = []; }
+
+  const p = list.find(x => x.id === id) || list[0];
+  
+  if (!p) {
+    document.getElementById("profilContainer").innerHTML = `
+        <div style="text-align:center;padding:60px;background:#fff;border-radius:20px;">
+            <h2 style="color:var(--muted)">Penjoki tidak ditemukan.</h2>
+            <a href="index.html" class="btn btn-primary" style="margin-top:20px;display:inline-block">Kembali ke Beranda</a>
+        </div>`;
+    return;
+  }
+  document.title = "JOKIPLACE - " + p.nama;
+
+  // 2. Ambil ulasan realtime (HANYA dari database ulasan asli)
+  let ulasanClient = [];
+  try {
+      const rawUlasan = localStorage.getItem(KEY_ULASAN);
+      const allUlasan = rawUlasan ? JSON.parse(rawUlasan) : [];
+      ulasanClient = allUlasan.filter(u => u.penjokiId === p.id);
+  } catch(e) { ulasanClient = []; }
+
+  const totalUlasan = ulasanClient.length;
+  
+  // Hitung rata-rata rating secara realtime
+  let avgRating = "0.0";
+  if (totalUlasan > 0) {
+      const totalBintang = ulasanClient.reduce((sum, u) => sum + Number(u.rating), 0);
+      avgRating = (totalBintang / totalUlasan).toFixed(1);
+  }
+
+  const brLink = "br.html";
+  const csLink = "cs.html";
+
+  document.getElementById("profilContainer").innerHTML = `
+    <!-- HEADER PROFIL -->
+    <div class="profil-header-card">
+      <div class="profil-avatar">${safe(p.nama.charAt(0).toUpperCase())}</div>
+      <div class="profil-info">
+        <h1 class="profil-name">${safe(p.nama)} <span class="status-dot ${p.status || 'offline'}"></span></h1>
+        <p class="profil-meta">${safe(p.asal || '-')} • ${safe(p.tierBR || '-')} • ${p.status === "online" ? "Online" : "Offline"}</p>
+        
+        <div class="profil-rating-box">
+            <div class="rating-score">⭐ ${avgRating}</div>
+            <div class="rating-count">Berdasarkan ${totalUlasan} ulasan pembeli</div>
+        </div>
+
+        <div class="profil-actions">
+          <a href="${brLink}" class="btn btn-primary" style="padding:12px 28px;font-size:15px">Order BR Rank</a>
+          <a href="${csLink}" class="btn btn-outline" style="padding:12px 28px;font-size:15px;border:1.5px solid var(--line)">Order CS Rank</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- KONTEN GRID -->
+    <div class="profil-grid">
+      
+      <!-- KIRI: Tentang & Ulasan -->
+      <div>
+        <div class="glass-card">
+          <h2 class="card-title">Tentang Penjoki</h2>
+          <p style="font-size:15px;color:var(--text);line-height:1.7;margin:0">${safe(p.deskripsi || 'Belum ada deskripsi.')}</p>
+        </div>
+
+        <div class="glass-card">
+          <h2 class="card-title">Ulasan Pembeli <span style="background:var(--blue-soft);color:var(--blue);padding:2px 10px;border-radius:20px;font-size:13px;margin-left:8px">${totalUlasan}</span></h2>
+          <div class="ulasan-list">
+            ${ulasanClient.length ? ulasanClient.map(u => `
+              <div class="ulasan-item">
+                <div class="ulasan-head">
+                  <div class="ulasan-name"><div class="ulasan-avatar">${safe(u.nama.charAt(0).toUpperCase())}</div> ${safe(u.nama)}</div>
+                  <span class="review-stars">${"★".repeat(u.rating)}${"☆".repeat(5 - u.rating)}</span>
+                </div>
+                <p class="ulasan-text">"${safe(u.teks)}"</p>
+                <div class="ulasan-date">${safe(u.tanggal || "Baru saja")}</div>
+              </div>
+            `).join("") : '<div style="text-align:center;color:var(--muted);padding:20px">Belum ada ulasan dari pembeli untuk penjoki ini.</div>'}
+          </div>
+        </div>
+      </div>
+
+      <!-- KANAN: Performa & Cara Pengerjaan -->
+      <div>
+        <div class="glass-card">
+          <h2 class="card-title">Performa</h2>
+          <div class="perf-grid">
+            <div class="perf-item"><span>Win Rate</span><strong>${p.winRate || 0}%</strong></div>
+            <div class="perf-item"><span>K/D Ratio</span><strong>${p.kdRatio || 0}</strong></div>
+            <div class="perf-item"><span>Total Match</span><strong>${p.totalMatch || 0}</strong></div>
+            <div class="perf-item"><span>Mulai Dari</span><strong>${money(p.hargaMulai || 25000)}</strong></div>
+            <div class="perf-item"><span>Estimasi</span><strong>${safe(p.estimasi || "2-3 hari")}</strong></div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h2 class="card-title">Cara Pengerjaan</h2>
+          <ul class="cara-list">
+            ${(p.caraPengerjaan || [
+                "Pilih layanan (BR Rank / CS Rank) dan tentukan target rank.",
+                "Lakukan pembayaran sesuai kesepakatan via WhatsApp.",
+                "Kirim data akun (login) ke penjoki melalui WhatsApp admin.",
+                "Penjoki mulai mengerjakan sesuai estimasi yang disepakati.",
+                "Setelah selesai, akun dikembalikan dan pembayaran dikonfirmasi."
+            ]).map(step => `<li>${safe(step)}</li>`).join("")}
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="text-align:center;margin-top:32px;margin-bottom:60px">
+      <a href="index.html" class="btn btn-outline" style="display:inline-block;padding:12px 32px;font-weight:700">← Kembali ke Beranda</a>
+    </div>
+  `;
+}
+
+document.addEventListener("DOMContentLoaded", renderProfil);
+</script>
+</body>
+</html>
+

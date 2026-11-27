@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JOKIPLACE - Dashboard Penjoki</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<style>
+    .penjoki-header { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    .penjoki-info h1 { font-size: 24px; font-weight: 900; margin-bottom: 4px; color: var(--text); }
+    .penjoki-info p { font-size: 14px; color: var(--muted); }
+    .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .bg-pending { background: #fef3c7; color: #92400e; }
+    .bg-process { background: #dbeafe; color: #1e40af; }
+    .bg-done { background: #d1fae5; color: #065f46; }
+    
+    .order-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: all 0.2s; }
+    .order-card:hover { border-color: var(--blue); }
+    .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+    .order-id { font-size: 16px; font-weight: 900; color: var(--text); }
+    .order-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .order-item label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+    .order-item span { font-size: 14px; font-weight: 600; color: var(--text); }
+    .order-actions { display: flex; gap: 12px; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line); flex-wrap: wrap; }
+    .input-estimasi { padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 13px; flex: 1; min-width: 200px; outline: none; font-family: inherit; }
+    .input-estimasi:focus { border-color: var(--blue); }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px; background: #fff; border-radius: 12px; border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<div class="layout">
+<header class="header">
+    <a class="logo" href="index.html">JOKIPLACE</a>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span id="userInfo" style="font-size:13px;font-weight:600;color:var(--text)">Memuat...</span>
+        <button class="btn btn-outline" onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<div class="content" style="max-width: 900px;">
+    
+    <div class="penjoki-header">
+        <div class="penjoki-info">
+            <h1 id="welcomeText">Dashboard Penjoki</h1>
+            <p>Kelola orderan yang masuk ke kamu di sini.</p>
+        </div>
+        <div>
+            <span class="status-badge bg-process" id="statusOnline">ONLINE</span>
+        </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;margin-bottom:24px;box-shadow:0 4px 12px rgba(0,0,0,0.02)">
+        <h2 style="font-size: 18px; font-weight: 900; margin-bottom: 16px;">Edit Profil Penjoki</h2>
+        <div class="calc-row" style="margin-bottom:12px">
+            <div class="calc-group"><label>Asal Kota</label><input type="text" id="editAsal" class="input-estimasi" style="width:100%"></div>
+            <div class="calc-group"><label>Deskripsi Singkat</label><input type="text" id="editDesc" class="input-estimasi" style="width:100%"></div>
+        </div>
+        <div class="calc-row" style="margin-bottom:16px">
+            <div class="calc-group"><label>Rank BR Tertinggi</label><input type="text" id="editBR" class="input-estimasi" style="width:100%"></div>
+            <div class="calc-group"><label>Rank CS Tertinggi</label><input type="text" id="editCS" class="input-estimasi" style="width:100%"></div>
+        </div>
+        <button class="btn btn-primary" onclick="simpanProfil()">Simpan Perubahan</button>
+    </div>
+
+    <h2 style="font-size: 20px; font-weight: 900; margin-bottom: 16px;">Orderan Saya</h2>
+    <div id="ordersList"></div>
+
+</div>
+</div>
+
+<script>
+// ===== KONFIGURASI =====
+const KEY_USER = "jp_user";
+const KEY_ORDERS = "jp_orders";
+
+// ===== FUNGSI UTILITY =====
+function getUser() { 
+    try { return JSON.parse(localStorage.getItem(KEY_USER) || "null"); } 
+    catch(e) { return null; } 
+}
+function getOrders() { 
+    try { return JSON.parse(localStorage.getItem(KEY_ORDERS) || "[]"); } 
+    catch(e) { return []; } 
+}
+function saveOrders(l) { 
+    localStorage.setItem(KEY_ORDERS, JSON.stringify(l)); 
+}
+function safe(s) { 
+    return String(s || "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); 
+}
+function simpanProfil() {
+    const user = getUser();
+    const penjokis = JSON.parse(localStorage.getItem("jp_penjoki") || "[]");
+    const idx = penjokis.findIndex(p => p.nama === user.penjokiNama);
+    
+    if (idx !== -1) {
+        penjokis[idx].asal = document.getElementById("editAsal").value.trim();
+        penjokis[idx].deskripsi = document.getElementById("editDesc").value.trim();
+        penjokis[idx].tierBR = document.getElementById("editBR").value.trim();
+        penjokis[idx].tierCS = document.getElementById("editCS").value.trim();
+        localStorage.setItem("jp_penjoki", JSON.stringify(penjokis));
+        alert("Profil berhasil diperbarui! Perubahan akan langsung terlihat di Beranda.");
+    }
+}
+
+function logout() {
+    localStorage.removeItem(KEY_USER);
+    window.location.href = "login.html";
+}
+
+// ===== LOGIKA UTAMA =====
+let currentUser = null;
+
+function cekRole() {
+    const u = getUser();
+    // Kalau belum login atau bukan penjoki, tendang ke login
+    if (!u || u.role !== "penjoki") { 
+        alert("Akses ditolak. Silakan login sebagai Penjoki.");
+        window.location.href = "login.html"; 
+        return false; 
+    }
+    currentUser = u;
+    
+    // Tampilkan nama di header
+    document.getElementById("userInfo").textContent = u.nama + " (Penjoki)";
+    document.getElementById("welcomeText").textContent = "Halo, " + u.nama + "!";
+
+    // Load data profil ke form
+    try {
+        const penjokis = JSON.parse(localStorage.getItem("jp_penjoki") || "[]");
+        const myProfile = penjokis.find(p => p.nama === u.penjokiNama);
+        if (myProfile) {
+            document.getElementById("editAsal").value = myProfile.asal || "";
+            document.getElementById("editDesc").value = myProfile.deskripsi || "";
+            document.getElementById("editBR").value = myProfile.tierBR || "";
+            document.getElementById("editCS").value = myProfile.tierCS || "";
+        }
+    } catch(e){}
+
+    return true;
+}
+
+function renderOrders() {
+    const allOrders = getOrders();
+    // Filter hanya orderan yang ditugaskan ke penjoki ini
+    const myOrders = allOrders.filter(o => o.assignedTo === currentUser.penjokiNama);
+    const el = document.getElementById("ordersList");
+    
+    if (!myOrders.length) { 
+        el.innerHTML = '<div class="empty-state">Belum ada orderan untuk kamu saat ini.<br>Santai dulu, nanti kalau ada orderan admin bakal tugasin ke sini.</div>'; 
+        return; 
+    }
+
+    el.innerHTML = myOrders.map(o => {
+        // Tentukan warna badge status
+        let badgeClass = "bg-pending";
+        if (o.status === "Diproses") badgeClass = "bg-process";
+        if (o.status === "Selesai") badgeClass = "bg-done";
+        
+        // Tombol aksi berdasarkan status
+        let actionButtons = "";
+        if (o.status === "Menunggu" || o.status === "Ditugaskan") {
+            actionButtons = `<button class="btn btn-primary" onclick="setStatus('${o.id}','Diproses')">Mulai Proses</button>`;
+        } else if (o.status === "Diproses") {
+            actionButtons = `<button class="btn btn-primary" onclick="selesaikan('${o.id}')" ${o.estimasiSelesai ? '' : 'disabled style="opacity:0.5"'}>Tandai Selesai</button>`;
+        }
+
+        return `
+        <div class="order-card">
+            <div class="order-header">
+                <div>
+                    <div class="order-id">${safe(o.id)}</div>
+                    <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">${safe(o.tanggal)}</div>
+                </div>
+                <span class="status-badge ${badgeClass}">${safe(o.status || "Menunggu")}</span>
+            </div>
+            
+            <div class="order-grid">
+                <div class="order-item">
+                    <label>Layanan</label>
+                    <span style="color: var(--blue); font-weight: 800;">${safe(o.layanan)}</span>
+                </div>
+                <div class="order-item">
+                    <label>Target Rank</label>
+                    <span>${safe(o.rankAwal)} &rarr; ${safe(o.rankTujuan)}</span>
+                </div>
+                <div class="order-item">
+                    <label>Pemesan</label>
+                    <span>${safe(o.nama)} (${safe(o.wa)})</span>
+                </div>
+                <div class="order-item">
+                    <label>Catatan</label>
+                    <span style="font-size: 13px; font-style: italic;">"${safe(o.catatan || "-")}"</span>
+                </div>
+            </div>
+
+            <div class="order-actions">
+                <input type="text" class="input-estimasi" placeholder="Isi estimasi (cth: 2 Hari)" value="${safe(o.estimasiSelesai || "")}" onchange="setEstimasi('${o.id}', this.value)">
+                ${actionButtons}
+            </div>
+        </div>
+        `;
+    }).join("");
+}
+
+function setEstimasi(id, val) {
+    const orders = getOrders();
+    const o = orders.find(x => x.id === id);
+    if (!o) return;
+    o.estimasiSelesai = val.trim();
+    saveOrders(orders);
+    renderOrders();
+}
+
+function setStatus(id, status) {
+    const orders = getOrders();
+    const o = orders.find(x => x.id === id);
+    if (!o) return;
+    o.status = status;
+    saveOrders(orders);
+    renderOrders();
+}
+
+function selesaikan(id) {
+    const orders = getOrders();
+    const o = orders.find(x => x.id === id);
+    if (!o) return;
+    if (!o.estimasiSelesai) { 
+        alert("Isi estimasi selesai dulu sebelum menandai selesai!"); 
+        return; 
+    }
+    o.status = "Selesai";
+    o.selesaiPada = new Date().toLocaleString("id-ID");
+    saveOrders(orders);
+    alert("Orderan " + id + " telah diselesaikan!");
+    renderOrders();
+}
+
+// ===== JALANKAN SAAT HALAMAN DIBUKA =====
+document.addEventListener("DOMContentLoaded", () => {
+    if (cekRole()) {
+        renderOrders();
+    }
+});
+</script>
+</body>
+</html>

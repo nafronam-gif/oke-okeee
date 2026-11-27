@@ -1,0 +1,52 @@
+﻿{
+  "jp_users": [
+    {
+      "id": "USR-12345",
+      "nama": "Nama User",
+      "email": "user@gmail.com",
+      "password": "h_hashed_password",
+      "role": "client | penjoki | admin",
+      "penjokiNama": "Nama Penjoki (jika role penjoki)",
+      "createdAt": "2026-11-27T..."
+    }
+  ],
+  "jp_penjoki": [
+    {
+      "id": 1,
+      "nama": "Tazz",
+      "asal": "Jakarta",
+      "status": "online | offline",
+      "rating": 4.8,
+      "totalUlasan": 120,
+      "winRate": 78,
+      "kdRatio": 3.2,
+      "tierBR": "Heroic V",
+      "tierCS": "Heroic 42",
+      "deskripsi": "Spesialis push rank...",
+      "keahlian": ["BR Rank", "CS Rank"]
+    }
+  ],
+  "jp_pendaftar": [
+    {
+      "id": "REG-12345",
+      "nama": "Calon Penjoki",
+      "email": "penjoki@gmail.com",
+      "status": "Menunggu Review | Disetujui | Ditolak"
+    }
+  ],
+  "jp_orders": [
+    {
+      "id": "ORD-12345",
+      "layanan": "BR Rank",
+      "rankAwal": "Gold I",
+      "rankTujuan": "Diamond I",
+      "status": "Menunggu | Diproses | Selesai",
+      "assignedTo": "Nama Penjoki"
+    }
+  ],
+  "jp_user": {
+    "id": "Session ID",
+    "nama": "Nama User Yang Sedang Login",
+    "role": "admin | penjoki | client"
+  }
+}

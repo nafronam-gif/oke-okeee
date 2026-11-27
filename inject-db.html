@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Memperbaiki Database...</title>
+<style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f8fafc; margin: 0; }
+    .box { background: #fff; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    a { display: inline-block; margin-top: 15px; padding: 10px 20px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="box">
+    <h1>✅ Database Berhasil Disuntikkan!</h1>
+    <p>Data Admin dan Penjoki sudah masuk ke browser ini.</p>
+    <a href="login.html">Klik di sini untuk Login</a>
+</div>
+<script>
+function hashPassword(pw) {
+  let hash = 0;
+  for (let i = 0; i < pw.length; i++) {
+    const char = pw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return "h_" + Math.abs(hash).toString(36);
+}
+
+const users = [
+  { id: "USR-ADMIN", nama: "Admin", email: "nafronabdi@gmail.com", password: hashPassword("admin123"), role: "admin", penjokiNama: "", createdAt: new Date().toISOString() },
+  { id: "USR-TAZZ", nama: "Tazz", email: "tazz@gmail.com", password: hashPassword("admin123"), role: "penjoki", penjokiNama: "Tazz", createdAt: new Date().toISOString() }
+];
+
+const penjoki = [
+  { id: 1, nama: "Tazz", asal: "Jakarta", status: "online", rating: 4.8, totalUlasan: 120, winRate: 78, kdRatio: 3.2, totalMatch: 1450, tierBR: "Heroic V", tierCS: "Heroic 42", hargaMulai: 25000, estimasi: "2-3 hari", keahlian: ["BR Rank", "CS Rank"], deskripsi: "Spesialis push rank cepat dan aman.", ulasan: [] }
+];
+
+localStorage.setItem("jp_users", JSON.stringify(users));
+localStorage.setItem("jp_penjoki", JSON.stringify(penjoki));
+localStorage.setItem("jp_pendaftar", JSON.stringify([]));
+localStorage.setItem("jp_orders", JSON.stringify([]));
+</script>
+</body>
+</html>

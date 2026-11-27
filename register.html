@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JOKIPLACE - Daftar Akun</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<style>
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 14px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; display: none; animation: slideDown 0.3s ease; }
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+    @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+</style>
+</head>
+<body>
+<div class="layout">
+<header class="header">
+<a class="logo" href="index.html">JOKIPLACE</a>
+<div style="margin-left:auto;display:flex;gap:12px">
+<a href="index.html" class="btn btn-outline">Beranda</a>
+<a href="login.html" class="btn btn-outline">Login</a>
+</div>
+</header>
+<div class="content">
+<div style="max-width:480px;margin:40px auto;background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px;box-shadow:0 8px 30px rgba(15,108,255,.08)">
+<h1 style="font-size:24px;font-weight:900;margin-bottom:8px;text-align:center">Daftar Akun</h1>
+<p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px">Buat akun pakai Gmail dan password.</p>
+
+<form id="registerForm" onsubmit="submitRegister(event)">
+<div class="calc-group" style="margin-bottom:16px">
+<label>Nama Lengkap</label>
+<input type="text" id="regNama" required placeholder="Nama kamu">
+</div>
+<div class="calc-group" style="margin-bottom:16px">
+<label>Email Gmail</label>
+<input type="email" id="regEmail" required placeholder="nama@gmail.com" pattern=".+@gmail\.com">
+<p style="font-size:11px;color:var(--muted);margin-top:4px">Harus @gmail.com</p>
+</div>
+<div class="calc-group" style="margin-bottom:24px">
+<label>Password</label>
+<input type="password" id="regPassword" required placeholder="Minimal 6 karakter" minlength="6">
+</div>
+<button type="submit" class="btn btn-primary" style="width:100%;padding:14px;margin-bottom:16px">Daftar</button>
+</form>
+
+<div style="text-align:center;margin-top:16px">
+  <p style="font-size:13px;color:var(--muted)">Sudah punya akun? <a href="login.html" style="color:var(--blue);font-weight:700">Login</a></p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const KEY_USERS = "jp_users";
+
+function getUsers() { try { return JSON.parse(localStorage.getItem(KEY_USERS) || "[]"); } catch(e){ return []; } }
+function saveUsers(l) { localStorage.setItem(KEY_USERS, JSON.stringify(l)); }
+
+function hashPassword(pw) {
+  let hash = 0;
+  for (let i = 0; i < pw.length; i++) {
+    const char = pw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return "h_" + Math.abs(hash).toString(36);
+}
+
+function showToast(msg, type) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast show " + type;
+    setTimeout(() => { t.className = "toast"; }, 3000);
+}
+
+function submitRegister(e) {
+  e.preventDefault();
+  const nama = document.getElementById("regNama").value.trim();
+  const email = document.getElementById("regEmail").value.trim().toLowerCase();
+  const password = document.getElementById("regPassword").value;
+
+  if (email === "nafronabdi@gmail.com") {
+    showToast("Email ini tidak bisa didaftarkan.", "error");
+    return;
+  }
+  if (!email.endsWith("@gmail.com")) { showToast("Email harus @gmail.com", "error"); return; }
+  if (password.length < 6) { showToast("Password minimal 6 karakter", "error"); return; }
+
+  const users = getUsers();
+  if (users.find(u => u.email.toLowerCase() === email)) { showToast("Email sudah terdaftar. Silakan login.", "error"); return; }
+
+  users.push({
+    id: "USR-" + Date.now(),
+    nama, email,
+    password: hashPassword(password),
+    role: "client",
+    penjokiNama: "",
+    createdAt: new Date().toISOString()
+  });
+  saveUsers(users);
+
+  showToast("Akun berhasil dibuat! Mengalihkan ke Login...", "success");
+  setTimeout(() => { window.location.href = "login.html"; }, 1500);
+}
+</script>
+</body>
+</html>

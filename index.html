@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JOKIPLACE - Marketplace Joki Free Fire</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<style>
+    .hero-section { text-align: center; padding: 60px 20px 40px; }
+    .hero-title { font-size: 42px; font-weight: 900; color: var(--text); letter-spacing: -1.5px; margin-bottom: 16px; }
+    .hero-title span { color: var(--blue); }
+    .hero-subtitle { font-size: 16px; color: var(--muted); max-width: 600px; margin: 0 auto 32px; }
+    .penjoki-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 30px; }
+    .penjoki-card { background: white; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; transition: all 0.3s; display: flex; flex-direction: column; }
+    .penjoki-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); border-color: var(--blue); }
+    .penjoki-cover { height: 100px; background: linear-gradient(135deg, var(--blue-soft), #dbeafe); }
+    .penjoki-avatar { width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; background: #ccc; margin: -40px auto 12px; display: block; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .penjoki-info { padding: 0 20px 20px; text-align: center; flex: 1; display: flex; flex-direction: column; }
+    .penjoki-name { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .penjoki-details { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .penjoki-rating { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 16px; font-size: 14px; font-weight: 700; color: #f59e0b; }
+    .penjoki-rating span { color: var(--muted); font-weight: 400; font-size: 12px; }
+    .btn-profil { background: var(--blue-soft); color: var(--blue); border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; margin-top: auto; transition: all 0.2s; text-decoration: none; display: block; text-align: center; }
+    .btn-profil:hover { background: var(--blue); color: white; }
+    .section-title { font-size: 24px; font-weight: 900; margin-bottom: 8px; }
+    .section-desc { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+    .join-box { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 40px; text-align: center; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div id="tsparticles" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;"></div>
+<div class="layout" style="position: relative; z-index: 1;">
+<header class="header">
+<a class="logo" href="index.html">JOKIPLACE</a>
+<div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+    <button id="btnDashboard" class="btn btn-primary" onclick="goDashboard()" style="border:1.5px solid var(--blue);">Dashboard</button>
+</div>
+</header>
+<div class="content">
+    <div class="hero-section">
+        <h1 class="hero-title">Top Up Rank <span>Free Fire</span> Termurah</h1>
+        <p class="hero-subtitle">Pilih penjoki terbaik, hitung harga, dan push rank tanpa ribet. 100% aman dan terpercaya.</p>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+        <div>
+            <h2 class="section-title">Daftar Penjoki</h2>
+            <p class="section-desc">Pilih penjoki yang sesuai dengan kebutuhanmu.</p>
+        </div>
+    </div>
+    <div class="penjoki-grid" id="penjokiGrid"></div>
+    <div class="join-box">
+        <h2 class="section-title">Mau Jadi Penjoki?</h2>
+        <p class="section-desc">Daftarkan dirimu sebagai penjoki JOKIPLACE dan dapatkan pelanggan.</p>
+        <a href="daftar-penjoki.html" class="btn btn-primary" style="display:inline-block; padding: 12px 32px; font-size: 15px;" >Daftar Jadi Penjoki</a>
+    </div>
+</div>
+<footer style="background: #0a1430; color: white; padding: 40px 32px; margin-top: 60px; position: relative; z-index: 2; text-align: center;">
+    <div class="logo" style="color: white; margin-bottom: 16px;">JOKIPLACE</div>
+    <p style="font-size: 13px; color: #9ca3af;">&copy; 2026 JOKIPLACE. All rights reserved.</p>
+</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+<script>
+    if (typeof tsParticles !== 'undefined') {
+        tsParticles.load("tsparticles", {
+            fpsLimit: 60, particles: { color: { value: "#0f6cff" }, links: { color: "#0f6cff", distance: 150, enable: true, opacity: 0.2, width: 1 }, move: { enable: true, speed: 1 }, number: { value: 60 }, size: { value: { min: 1, max: 4 } } }
+        });
+    }
+
+    // Data sekarang sepenuhnya diambil dari localStorage (Database Admin)
+    const KEY_PENJOKI = "jp_penjoki";
+const KEY_ULASAN = "jp_ulasan";
+let penjokis = [];
+
+    function loadPenjokis() {
+        try {
+            const saved = localStorage.getItem("jp_penjoki");
+            penjokis = saved ? JSON.parse(saved) : [];
+        } catch(e) {
+            penjokis = [];
+        }
+        renderPenjokis();
+    }
+
+    function renderPenjokis() {
+        const grid = document.getElementById("penjokiGrid");
+        
+        if (!penjokis || penjokis.length === 0) {
+            grid.innerHTML = '<div style="text-align:center; padding:40px; width:100%; color:#6b7280; font-size: 15px;">Belum ada penjoki yang terdaftar saat ini.</div>';
+            return;
+        }
+
+        // Ambil semua ulasan asli dari client
+        let allUlasan = [];
+        try { allUlasan = JSON.parse(localStorage.getItem(KEY_ULASAN) || "[]"); } catch(e) {}
+
+        grid.innerHTML = penjokis.map(p => {
+            // Hitung rating murni dari ulasan asli
+            const ulasanAsli = allUlasan.filter(u => u.penjokiId === p.id);
+            const totalUlasan = ulasanAsli.length;
+            const avgRating = totalUlasan > 0 ? (ulasanAsli.reduce((s, u) => s + Number(u.rating), 0) / totalUlasan).toFixed(1) : "0.0";
+
+            return `
+            <div class="penjoki-card">
+                <div class="penjoki-cover"></div>
+                <img src="${p.foto || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(p.nama) + '&background=0f6cff&color=fff'}" alt="${p.nama}" class="penjoki-avatar">
+                <div class="penjoki-info">
+                    <h3 class="penjoki-name">${p.nama} <span class="status-dot ${p.status || 'offline'}"></span></h3>
+                    <p class="penjoki-details">${p.asal || '-'} • ${p.tierBR || '-'}</p>
+                    <div class="penjoki-rating">⭐ ${avgRating} <span>(${totalUlasan} ulasan)</span></div>
+                    <button class="btn-profil" onclick="bukaProfil(${p.id})">Lihat Profil</button>
+                </div>
+            </div>
+            `;
+        }).join("");
+    }
+
+    function bukaProfil(id) {
+        const p = penjokis.find(x => x.id === id);
+        if (p) localStorage.setItem("selectedPenjoki", p.nama);
+        window.location.href = "profil.html?id=" + id;
+    }
+
+    document.addEventListener("DOMContentLoaded", loadPenjokis);
+
+    function goDashboard() {
+        let user = null;
+        try { user = JSON.parse(localStorage.getItem("jp_user") || "null"); } catch(e) { user = null; }
+        if (!user || !user.role) {
+            window.location.href = "login.html";
+            return;
+        }
+        if (user.role === "admin") window.location.href = "dashboard-admin.html";
+        else if (user.role === "penjoki") window.location.href = "dashboard-penjoki.html";
+        else window.location.href = "client.html";
+    }
+</script>
+</body>
+</html>
+
+
