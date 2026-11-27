@@ -1,0 +1,16 @@
+﻿{
+  "name": "jokiplace",
+  "version": "1.0.0",
+  "description": "Marketplace Joki Free Fire",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo \"Static site ready to deploy\""
+  },
+  "keywords": [
+    "joki",
+    "freefire",
+    "marketplace"
+  ],
+  "author": "Nafron",
+  "license": "ISC"
+}
