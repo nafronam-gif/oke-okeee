@@ -53,12 +53,15 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- Tambahkan Firebase SDK -->
+<!-- 1. Panggil SDK Firebase versi Compat -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+<!-- 2. Panggil file config -->
 <script src="firebase-config.js"></script>
 
+<!-- 3. Logika Register -->
 <script>
 function showToast(msg, type) {
     const t = document.getElementById("toast");
@@ -85,11 +88,11 @@ async function submitRegister(e) {
   btnSubmit.disabled = true;
 
   try {
-    // 1. Buat akun di Firebase Authentication
+    // Buat akun di Firebase Authentication
     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
     const user = userCredential.user;
 
-    // 2. Simpan data profil (Nama & Role) ke Firestore
+    // Simpan data profil (Nama & Role) ke Firestore
     const userData = {
       id: user.uid,
       nama: nama,
