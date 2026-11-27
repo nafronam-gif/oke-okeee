@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -40,7 +40,7 @@
 <label>Password</label>
 <input type="password" id="loginPassword" placeholder="Masukkan password">
 </div>
-<button type="submit" class="btn btn-primary" style="width:100%;padding:14px">Masuk</button>
+<button type="submit" class="btn btn-primary" id="btnSubmit" style="width:100%;padding:14px">Masuk</button>
 </form>
 <div style="text-align:center;margin-top:16px">
 <p style="font-size:13px;color:var(--muted)">Belum punya akun? <a href="register.html" style="color:var(--blue);font-weight:700">Daftar</a></p>
@@ -49,62 +49,89 @@
 </div>
 </div>
 </div>
+
+<!-- Tambahkan Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+
 <script>
-const KEY_USERS = "jp_users";
 const KEY_USER  = "jp_user";
 const ADMIN_EMAIL = "nafronabdi@gmail.com";
-function getUsers() { try { return JSON.parse(localStorage.getItem(KEY_USERS) || "[]"); } catch(e){ return []; } }
-function hashPassword(pw) {
-  let hash = 0;
-  for (let i = 0; i < pw.length; i++) {
-    const char = pw.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return "h_" + Math.abs(hash).toString(36);
-}
+
 function showAlert(msg, type = "error") {
   const box = document.getElementById("alertBox");
   document.getElementById("alertMsg").textContent = msg;
   box.className = "alert show alert-" + type;
   setTimeout(() => { box.className = "alert"; }, 4000);
 }
-function submitLogin(e) {
+
+async function submitLogin(e) {
   e.preventDefault();
   const email = document.getElementById("loginEmail").value.trim().toLowerCase();
   const password = document.getElementById("loginPassword").value;
+  const btnSubmit = document.getElementById("btnSubmit");
+
   if (!email) { showAlert("Email wajib diisi."); return; }
   if (!password) { showAlert("Password wajib diisi."); return; }
   if (!email.endsWith("@gmail.com")) { showAlert("Email harus @gmail.com"); return; }
 
-  if (email === ADMIN_EMAIL) {
-    if (password !== "admin123") { showAlert("Password admin salah."); return; }
-    localStorage.setItem(KEY_USER, JSON.stringify({
-      id: "USR-ADMIN", nama: "Admin", email: ADMIN_EMAIL,
-      role: "admin", penjokiNama: ""
-    }));
-    showAlert("Login admin berhasil! Mengalihkan...", "success");
-    setTimeout(() => { window.location.href = "dashboard-admin.html"; }, 900);
-    return;
+  // Tampilkan loading
+  btnSubmit.textContent = "Memproses...";
+  btnSubmit.disabled = true;
+
+  try {
+    // 1. Login via Firebase Authentication
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    const user = userCredential.user;
+
+    // 2. Ambil data role/nama dari Firestore (BUKAN localStorage)
+    const userDoc = await db.collection("users").doc(user.uid).get();
+    
+    let userData = {
+        id: user.uid,
+        email: user.email,
+        nama: "User",
+        role: "client",
+        penjokiNama: ""
+    };
+
+    if (userDoc.exists) {
+        userData = { ...userData, ...userDoc.data() };
+    } else if (email === ADMIN_EMAIL) {
+        // Jika Admin belum punya dokumen di Firestore, buatkan otomatis
+        userData.nama = "Admin";
+        userData.role = "admin";
+        await db.collection("users").doc(user.uid).set(userData);
+    }
+
+    // 3. Simpan sesi login (hanya untuk navigasi UI, bukan database utama)
+    localStorage.setItem(KEY_USER, JSON.stringify(userData));
+
+    showAlert("Login berhasil! Mengalihkan...", "success");
+    
+    setTimeout(() => {
+      if (userData.role === "admin") window.location.href = "dashboard-admin.html";
+      else if (userData.role === "penjoki") window.location.href = "dashboard-penjoki.html";
+      else window.location.href = "client.html";
+    }, 900);
+
+  } catch (error) {
+    console.error("Login Error:", error);
+    btnSubmit.textContent = "Masuk";
+    btnSubmit.disabled = false;
+
+    // Terjemahan error Firebase ke bahasa Indonesia
+    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      showAlert("Email atau password salah.");
+    } else if (error.code === 'auth/too-many-requests') {
+      showAlert("Terlalu banyak percobaan login. Coba lagi nanti.");
+    } else {
+      showAlert("Gagal login: " + error.message);
+    }
   }
-
-  const users = getUsers();
-  const user = users.find(u => u.email.toLowerCase() === email);
-  if (!user) { showAlert("Email belum terdaftar. Silakan daftar dulu."); return; }
-  if (user.password !== hashPassword(password)) { showAlert("Password salah."); return; }
-
-  localStorage.setItem(KEY_USER, JSON.stringify({
-    id: user.id, nama: user.nama, email: user.email,
-    role: user.role, penjokiNama: user.penjokiNama || ""
-  }));
-  showAlert("Login berhasil! Mengalihkan...", "success");
-  setTimeout(() => {
-    if (user.role === "admin") window.location.href = "dashboard-admin.html";
-    else if (user.role === "penjoki") window.location.href = "dashboard-penjoki.html";
-    else window.location.href = "client.html";
-  }, 900);
 }
 </script>
 </body>
 </html>
-
