@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -41,7 +41,7 @@
 <label>Password</label>
 <input type="password" id="regPassword" required placeholder="Minimal 6 karakter" minlength="6">
 </div>
-<button type="submit" class="btn btn-primary" style="width:100%;padding:14px;margin-bottom:16px">Daftar</button>
+<button type="submit" class="btn btn-primary" id="btnSubmit" style="width:100%;padding:14px;margin-bottom:16px">Daftar</button>
 </form>
 
 <div style="text-align:center;margin-top:16px">
@@ -53,22 +53,13 @@
 
 <div id="toast" class="toast"></div>
 
+<!-- Tambahkan Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+
 <script>
-const KEY_USERS = "jp_users";
-
-function getUsers() { try { return JSON.parse(localStorage.getItem(KEY_USERS) || "[]"); } catch(e){ return []; } }
-function saveUsers(l) { localStorage.setItem(KEY_USERS, JSON.stringify(l)); }
-
-function hashPassword(pw) {
-  let hash = 0;
-  for (let i = 0; i < pw.length; i++) {
-    const char = pw.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return "h_" + Math.abs(hash).toString(36);
-}
-
 function showToast(msg, type) {
     const t = document.getElementById("toast");
     t.textContent = msg;
@@ -76,11 +67,12 @@ function showToast(msg, type) {
     setTimeout(() => { t.className = "toast"; }, 3000);
 }
 
-function submitRegister(e) {
+async function submitRegister(e) {
   e.preventDefault();
   const nama = document.getElementById("regNama").value.trim();
   const email = document.getElementById("regEmail").value.trim().toLowerCase();
   const password = document.getElementById("regPassword").value;
+  const btnSubmit = document.getElementById("btnSubmit");
 
   if (email === "nafronabdi@gmail.com") {
     showToast("Email ini tidak bisa didaftarkan.", "error");
@@ -89,21 +81,44 @@ function submitRegister(e) {
   if (!email.endsWith("@gmail.com")) { showToast("Email harus @gmail.com", "error"); return; }
   if (password.length < 6) { showToast("Password minimal 6 karakter", "error"); return; }
 
-  const users = getUsers();
-  if (users.find(u => u.email.toLowerCase() === email)) { showToast("Email sudah terdaftar. Silakan login.", "error"); return; }
+  btnSubmit.textContent = "Mendaftar...";
+  btnSubmit.disabled = true;
 
-  users.push({
-    id: "USR-" + Date.now(),
-    nama, email,
-    password: hashPassword(password),
-    role: "client",
-    penjokiNama: "",
-    createdAt: new Date().toISOString()
-  });
-  saveUsers(users);
+  try {
+    // 1. Buat akun di Firebase Authentication
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    const user = userCredential.user;
 
-  showToast("Akun berhasil dibuat! Mengalihkan ke Login...", "success");
-  setTimeout(() => { window.location.href = "login.html"; }, 1500);
+    // 2. Simpan data profil (Nama & Role) ke Firestore
+    const userData = {
+      id: user.uid,
+      nama: nama,
+      email: email,
+      role: "client", // Default mendaftar sebagai client
+      penjokiNama: "",
+      bio: "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await db.collection("users").doc(user.uid).set(userData);
+
+    showToast("Akun berhasil dibuat! Mengalihkan ke Login...", "success");
+    setTimeout(() => { window.location.href = "login.html"; }, 1500);
+
+  } catch (error) {
+    console.error("Register Error:", error);
+    btnSubmit.textContent = "Daftar";
+    btnSubmit.disabled = false;
+
+    // Terjemahan error Firebase
+    if (error.code === 'auth/email-already-in-use') {
+      showToast("Email sudah terdaftar. Silakan login.", "error");
+    } else if (error.code === 'auth/weak-password') {
+      showToast("Password terlalu lemah (minimal 6 karakter).", "error");
+    } else {
+      showToast("Gagal mendaftar: " + error.message, "error");
+    }
+  }
 }
 </script>
 </body>
